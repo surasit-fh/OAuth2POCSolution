@@ -81,11 +81,11 @@ namespace OAuth2POC.API
                 options.Validate(JwtBearerDefaults.AuthenticationScheme);
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = "OAuth2POC",
-                    ValidAudience = "5e5dd2e536eeff9b0efac5af",
-                    //ValidAudience = "5e5dd2f736eeff9b0efac5b1",
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    //ValidIssuer = "OAuth2POC",
+                    //ValidAudience = "5e5dd2e536eeff9b0efac5af",
+                    //ValidAudience = "5e6678dca0be7d82e0159c2c",
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SettingHelper.ConfigMapping.Secret)),

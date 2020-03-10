@@ -20,7 +20,6 @@ namespace OAuth2POC.API.Helpers
 
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            var n = SettingHelper.ConfigMapping.Secret;
             var headers = filterContext.HttpContext.Request.Headers;
 
             if (!headers.ContainsKey("Authorization"))
@@ -36,15 +35,15 @@ namespace OAuth2POC.API.Helpers
             }
                 
             string token = authorizationHeader.Substring("Bearer".Length).Trim();
-            //var response = ValidateToken(token);
+            string response = ValidateToken(token);
 
             base.OnActionExecuting(filterContext);
         }
 
-        //private string ValidateToken(string token)
-        //{
-        //    var response = new TokenService().ValidateToken(token);
-        //    return response;
-        //}
+        private string ValidateToken(string token)
+        {
+            string response = new TokenService(SettingHelper.ConfigMapping.Secret).ValidateToken(token);
+            return response;
+        }
     }
 }
