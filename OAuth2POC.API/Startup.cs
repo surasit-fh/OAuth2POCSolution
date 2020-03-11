@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,9 +82,6 @@ namespace OAuth2POC.API
                 {
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    //ValidIssuer = "OAuth2POC",
-                    //ValidAudience = "5e5dd2e536eeff9b0efac5af",
-                    //ValidAudience = "5e6678dca0be7d82e0159c2c",
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SettingHelper.ConfigMapping.Secret)),

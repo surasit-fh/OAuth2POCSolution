@@ -3,6 +3,7 @@ using OAuth2POC.DAL.Repositories.Repositories;
 using OAuth2POC.IDP.Helpers;
 using OAuth2POC.IDP.Process.IProcess;
 using OAuth2POC.IDP.Services;
+using OAuth2POC.IDP.Services.IService;
 using OAuth2POC.Model.Enums;
 using OAuth2POC.Model.Models.Interface;
 using OAuth2POC.Model.Models.Responses;
@@ -16,14 +17,14 @@ namespace OAuth2POC.IDP.Process
 {
     public class AccountProcess : IAccountProcess
     {
-        private readonly AppSettings _appSettings;
+        private readonly ITokenService _tokenService;
 
-        public AccountProcess(IOptions<AppSettings> appSettings)
+        public AccountProcess(ITokenService tokenService)
         {
-            _appSettings = appSettings.Value;
+            _tokenService = tokenService;
         }
 
-        public AuthenticationResponse LoginProcess(UserInfo userInfo, AuthenticationInfo authenticationInfo)
+        public AuthenticationResponse LoginProcess(UserInfo userInfo, AuthenticationInfo authenticationInfo, TokenInfo tokenInfo)
         {
             try
             {
@@ -39,7 +40,7 @@ namespace OAuth2POC.IDP.Process
                         }
                     case GrantType.RefreshToken:
                         {
-                            return AuthenticationByToken(authenticationInfo);
+                            return AuthenticationByToken(tokenInfo);
                         }
                     default: return MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString());
                 }
@@ -50,7 +51,7 @@ namespace OAuth2POC.IDP.Process
             }
         }
 
-        public AuthenticationResponse LogoutProcess(TokenInfo tokenInfo)
+        public AuthenticationResponse LogoutProcess(string AccessToken)
         {
             try
             {
@@ -83,63 +84,41 @@ namespace OAuth2POC.IDP.Process
                     }
                 };
 
-                TokenService tokenService = new TokenService(_appSettings.Secret);
-                string token = tokenService.GenerateToken(jwtInfo);
+                string token = _tokenService.GetToken(jwtInfo);
 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    TokenInfo tokenInfo = new TokenInfo()
+                    AuthenticationInfo authenResponse = new AuthenticationInfo()
+                    {
+                        GrantType = GrantType.AuthorizationCode
+                    };
+
+                    TokenInfo tokenResponse = new TokenInfo()
                     {
                         AccessToken = token,
                         TokenType = TokenType.Bearer,
                         ExpiresIn = jwtInfo.Payload.ExpirationTime * 60,
-                        RefreshToken = "",
-                        ClientId = authenticationInfo.ClientId,
-                        CreatedAt = DateTime.Now
+                        RefreshToken = _tokenService.GenerateRefreshToken(),
+                        ClientId = authenticationInfo.ClientId.ToString(),
+                        ExpiresAt = DateTime.UtcNow.AddSeconds(jwtInfo.Payload.ExpirationTime * 60)
                     };
 
-                    return MappingSuccessResponse(null, tokenInfo);
+                    List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = authenticationInfo.ClientId.ToString() });
+
+                    if (listToken.Count > 0)
+                    {
+                        new TokenRepository().Update<TokenInfo>(listToken.FirstOrDefault());
+                    }
+                    else
+                    {
+                        new TokenRepository().Insert<TokenInfo>(tokenResponse);
+                    }
+
+                    return MappingSuccessResponse(authenResponse, tokenResponse);
                 }
                 else
                 {
                     return MappingErrorResponse(ErrorCode.InternalServerError, ErrorCode.InternalServerError.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        private AuthenticationResponse AuthenticationByCredentials(string base64credentials)
-        {
-            try
-            {
-                byte[] credentialsByte = Convert.FromBase64String(base64credentials);
-                string strCredentials = Encoding.ASCII.GetString(credentialsByte);
-                string[] arrCre = strCredentials.Split(':');
-
-                List<UserInfo> listUser = new UserRepository().GetAll<UserInfo>();
-                UserInfo user = listUser.Find(u => u.Username == arrCre[0] && u.Password == arrCre[1]);
-
-                if (user != null)
-                {
-                    AuthenticationInfo authenticationInfo = new AuthenticationInfo()
-                    {
-                        ClientId = user.UserId,
-                        ClientSecret = Convert.ToBase64String(Encoding.ASCII.GetBytes(_appSettings.Secret)),
-                        GrantType = GrantType.AuthorizationCode,
-                        Code = Convert.ToBase64String(Encoding.ASCII.GetBytes(user.UserId.ToString())),
-                        State = "",
-                        Scope = new string[] { "profile" },
-                        RedirectURI = ""
-                    };
-
-                    return MappingSuccessResponse(authenticationInfo, null);
-                }
-                else
-                {
-                    return MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString());
                 }
             }
             catch (Exception ex)
@@ -157,18 +136,18 @@ namespace OAuth2POC.IDP.Process
 
                 if (user != null)
                 {
-                    AuthenticationInfo authenticationInfo = new AuthenticationInfo()
+                    AuthenticationInfo authenResponse = new AuthenticationInfo()
                     {
                         ClientId = user.UserId,
-                        ClientSecret = Convert.ToBase64String(Encoding.ASCII.GetBytes(_appSettings.Secret)),
-                        GrantType = GrantType.AuthorizationCode,
+                        ClientSecret = Convert.ToBase64String(Encoding.ASCII.GetBytes(SettingHelper.ConfigMapping.Secret)),
+                        GrantType = GrantType.ClientCredentials,
                         Code = Convert.ToBase64String(Encoding.ASCII.GetBytes(user.UserId.ToString())),
-                        State = "",
+                        State = string.Empty,
                         Scope = new string[] { "profile" },
                         RedirectURI = ""
                     };
 
-                    return MappingSuccessResponse(authenticationInfo, null);
+                    return MappingSuccessResponse(authenResponse, null);
                 }
                 else
                 {
@@ -181,11 +160,23 @@ namespace OAuth2POC.IDP.Process
             }
         }
 
-        private AuthenticationResponse AuthenticationByToken(AuthenticationInfo authenticationInfo)
+        private AuthenticationResponse AuthenticationByToken(TokenInfo tokenInfo)
         {
             try
             {
-                throw new NotImplementedException();
+                var response = _tokenService.RefreshToken(tokenInfo.AccessToken, tokenInfo.RefreshToken);
+
+                AuthenticationInfo authenResponse = new AuthenticationInfo()
+                {
+                    GrantType = GrantType.RefreshToken
+                };
+
+                TokenInfo tokenResponse = new TokenInfo()
+                {
+
+                };
+
+                return MappingSuccessResponse(authenResponse, tokenResponse);
             }
             catch (Exception ex)
             {

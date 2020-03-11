@@ -9,8 +9,10 @@ namespace OAuth2POC.IDP.Services.IService
 {
     public interface ITokenService
     {
-        string GenerateToken(JWTInfo jWTInfo);
-        string ValidateToken(string token);
-        ClaimsPrincipal GetPrincipal(string token);
+        string GetToken(JWTInfo jwtInfo);
+        string RefreshToken(string token, string refreshToken);
+        bool ValidateToken(string token);
+        //string RevokeToken();
+        string GenerateRefreshToken();
     }
 }

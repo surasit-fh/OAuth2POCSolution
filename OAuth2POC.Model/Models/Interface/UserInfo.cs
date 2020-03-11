@@ -37,10 +37,6 @@ namespace OAuth2POC.Model.Models.Interface
 
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
-        public string Token { get; set; }
-
-        [DefaultValue(null)]
-        [BsonIgnoreIfNull]
         [BsonRepresentation(BsonType.DateTime)]
         public DateTime CreateDate { get; set; }
 

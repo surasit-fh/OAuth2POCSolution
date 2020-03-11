@@ -45,11 +45,11 @@ namespace OAuth2POC.Model.Models.Interface
         [DefaultValue(null)]
         //[JsonProperty(PropertyName = "client_id")]
         [BsonIgnoreIfNull]
-        [BsonElement("_id")]
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId ClientId { get; set; }
+        //[BsonElement("_id")]
+        //[BsonId]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //[JsonConverter(typeof(ObjectIdConverter))]
+        public string ClientId { get; set; }
 
         [DefaultValue(null)]
         //[JsonProperty(PropertyName = "created_at")]

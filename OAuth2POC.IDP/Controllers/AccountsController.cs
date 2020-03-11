@@ -25,15 +25,15 @@ namespace OAuth2POC.IDP.Controllers
         [Consumes("application/json")]
         public AuthenticationResponse Login([FromHeader]BaseHeader header, AuthenRequest authenRequest)
         {
-            AuthenticationResponse authenResponse = _accountProcess.LoginProcess(authenRequest.UserInfo, authenRequest.AuthenticationInfo);
+            AuthenticationResponse authenResponse = _accountProcess.LoginProcess(authenRequest.UserInfo, authenRequest.AuthenticationInfo, authenRequest.TokenInfo);
             return authenResponse;
         }
 
         [HttpPost("Logout")]
         [Consumes("application/json")]
-        public AuthenticationResponse Logout([FromHeader]BaseHeader header, TokenRequest tokenRequest)
+        public AuthenticationResponse Logout([FromHeader]BaseHeader header, string AccessToken)
         {
-            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(tokenRequest.TokenInfo);
+            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(AccessToken);
             return authenResponse;
         }
     }

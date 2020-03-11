@@ -1,18 +1,21 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using OAuth2POC.IDP.Helpers;
 using OAuth2POC.IDP.Process;
 using OAuth2POC.IDP.Process.IProcess;
+using OAuth2POC.IDP.Services;
+using OAuth2POC.IDP.Services.IService;
 
 namespace OAuth2POC.IDP
 {
@@ -42,23 +45,32 @@ namespace OAuth2POC.IDP
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.Configure<AppSettings>(options =>
-            {
-                options.Secret = Configuration.GetSection("AppSettings:Secret").Value;
-            });
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
+            //        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme‌​)
+            //        .RequireAuthenticatedUser().Build());
+            //});
 
             services.AddCors();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IAccountProcess, AccountProcess>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUserService, UserService>();
+
+            services.AddAuthentication();
 
             services.AddMvc(options =>
             {
                 options.AllowEmptyInputInBodyModelBinding = true;
-            });
+            })
+            .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<AppSettings> options)
         {
             if (env.IsDevelopment())
             {
@@ -76,8 +88,8 @@ namespace OAuth2POC.IDP
             app.UseCookiePolicy();
             app.UseMvc();
 
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             app.UseAuthentication();
+            SettingHelper.Initial(options);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace OAuth2POC.API.Services.IServices
 {
     public interface ITokenService
     {
-        string ValidateToken(string token);
+        bool ValidateToken(string token);
         ClaimsPrincipal GetPrincipal(string token);
     }
 }
