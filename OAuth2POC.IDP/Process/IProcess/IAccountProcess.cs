@@ -9,7 +9,7 @@ namespace OAuth2POC.IDP.Process.IProcess
 {
     public interface IAccountProcess
     {
-        AuthenticationResponse LoginProcess(UserInfo userInfo, AuthenticationInfo authenticationInfo, TokenInfo tokenInfo);
+        AuthenticationResponse LoginProcess(string credentials, AuthenticationInfo authenticationInfo, TokenInfo tokenInfo);
         AuthenticationResponse LogoutProcess(string AccessToken);
     }
 }

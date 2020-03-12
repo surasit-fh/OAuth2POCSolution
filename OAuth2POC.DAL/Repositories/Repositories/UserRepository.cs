@@ -64,6 +64,11 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     filter = filter & builder.Eq("Username", userInfo.Username);
                 }
 
+                if (!string.IsNullOrEmpty(userInfo.Password))
+                {
+                    filter = filter & builder.Eq("Password", userInfo.Password);
+                }
+
                 List<UserInfo> listUser = MongoDBCollectionControllers.UsersCollection.Find(filter).ToList();
                 return listUser;
             }
@@ -84,8 +89,8 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     LastName = userInfo.LastName,
                     Username = userInfo.Username,
                     Password = userInfo.Password,
-                    CreateDate = DateTime.Now,
-                    LastUpdateDate = DateTime.Now
+                    CreateDate = DateTime.UtcNow,
+                    LastUpdateDate = DateTime.UtcNow
                 };
 
                 MongoDBCollectionControllers.UsersCollection.InsertOne(userRequest);
@@ -106,7 +111,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(u => u.LastName, !string.IsNullOrEmpty(userInfo.LastName) ? userInfo.LastName : string.Empty)
                     .Set(u => u.Username, !string.IsNullOrEmpty(userInfo.Username) ? userInfo.Username : string.Empty)
                     .Set(u => u.Password, !string.IsNullOrEmpty(userInfo.Password) ? userInfo.Password : string.Empty)
-                    .Set(u => u.LastUpdateDate, DateTime.Now);
+                    .Set(u => u.LastUpdateDate, DateTime.UtcNow);
 
                 UpdateResult updateResult = MongoDBCollectionControllers.UsersCollection.UpdateOne(u => u.UserId == userInfo.UserId, objUser);
 

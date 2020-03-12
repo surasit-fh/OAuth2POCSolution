@@ -9,10 +9,9 @@ namespace OAuth2POC.IDP.Services.IService
 {
     public interface ITokenService
     {
-        string GetToken(JWTInfo jwtInfo);
-        string RefreshToken(string token, string refreshToken);
+        TokenInfo GetToken(string clientId);
+        TokenInfo RefreshToken(string token, string refreshToken);
         bool ValidateToken(string token);
-        //string RevokeToken();
-        string GenerateRefreshToken();
+        bool RevokeToken(string token);
     }
 }

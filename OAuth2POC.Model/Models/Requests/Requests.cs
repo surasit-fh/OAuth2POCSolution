@@ -12,7 +12,6 @@ namespace OAuth2POC.Model.Models.Requests
 
     public class AuthenRequest
     {
-        public UserInfo UserInfo { get; set; }
         public AuthenticationInfo AuthenticationInfo { get; set; }
         public TokenInfo TokenInfo { get; set; }
     }

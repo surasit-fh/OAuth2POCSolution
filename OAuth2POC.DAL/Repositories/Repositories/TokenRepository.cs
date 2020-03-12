@@ -90,7 +90,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     ExpiresIn = tokenInfo.ExpiresIn,
                     RefreshToken = tokenInfo.RefreshToken,
                     ClientId = tokenInfo.ClientId,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     ExpiresAt = tokenInfo.ExpiresAt
                 };
 
@@ -113,7 +113,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(t => t.ExpiresIn, tokenInfo.ExpiresIn > 0 ? tokenInfo.ExpiresIn : 0)
                     .Set(t => t.RefreshToken, !string.IsNullOrEmpty(tokenInfo.RefreshToken) ? tokenInfo.RefreshToken : string.Empty)
                     .Set(t => t.ClientId, !string.IsNullOrEmpty(tokenInfo.ClientId) ? tokenInfo.ClientId : string.Empty)
-                    .Set(t => t.CreatedAt, DateTime.Now)
+                    .Set(t => t.CreatedAt, DateTime.UtcNow)
                     .Set(t => t.ExpiresAt, tokenInfo.ExpiresAt != null ? tokenInfo.ExpiresAt : Convert.ToDateTime(null));
 
                 UpdateResult updateResult = MongoDBCollectionControllers.TokensCollection.UpdateOne(t => t.TokenId == tokenInfo.TokenId, objToken);

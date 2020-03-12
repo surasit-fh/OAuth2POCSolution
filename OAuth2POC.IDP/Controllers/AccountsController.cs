@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OAuth2POC.IDP.Helpers;
 using OAuth2POC.IDP.Process.IProcess;
 using OAuth2POC.Model.Headers;
 using OAuth2POC.Model.Models.Requests;
@@ -10,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace OAuth2POC.IDP.Controllers
 {
+    [SecurityHeaders]
+    //[Authorize]
     [ApiController]
     [Route("api/auth/oauth2/v2/[controller]")]
     public class AccountsController : Controller
@@ -25,15 +29,15 @@ namespace OAuth2POC.IDP.Controllers
         [Consumes("application/json")]
         public AuthenticationResponse Login([FromHeader]BaseHeader header, AuthenRequest authenRequest)
         {
-            AuthenticationResponse authenResponse = _accountProcess.LoginProcess(authenRequest.UserInfo, authenRequest.AuthenticationInfo, authenRequest.TokenInfo);
+            AuthenticationResponse authenResponse = _accountProcess.LoginProcess(header.Authorization.Substring("Basic".Length).Trim(), authenRequest.AuthenticationInfo, authenRequest.TokenInfo);
             return authenResponse;
         }
 
         [HttpPost("Logout")]
         [Consumes("application/json")]
-        public AuthenticationResponse Logout([FromHeader]BaseHeader header, string AccessToken)
+        public AuthenticationResponse Logout([FromHeader]BaseHeader header)
         {
-            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(AccessToken);
+            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(header.Authorization);
             return authenResponse;
         }
     }

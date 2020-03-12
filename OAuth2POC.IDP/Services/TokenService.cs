@@ -1,7 +1,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using OAuth2POC.DAL.Repositories.Repositories;
 using OAuth2POC.IDP.Helpers;
 using OAuth2POC.IDP.Services.IService;
+using OAuth2POC.Model.Enums;
 using OAuth2POC.Model.Models.Interface;
 using System;
 using System.Collections.Generic;
@@ -16,18 +18,34 @@ namespace OAuth2POC.IDP.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IUserService _userService;
-
-        public TokenService(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        public string GetToken(JWTInfo jwtInfo)
+        public TokenInfo GetToken(string clientId)
         {
             try
             {
-                return GenerateToken(jwtInfo);
+                TokenInfo tokenInfo = new TokenInfo()
+                {
+                    AccessToken = GenerateToken(clientId),
+                    TokenType = TokenType.Bearer,
+                    ExpiresIn = 60 * 60,
+                    RefreshToken = GenerateRefreshToken(),
+                    ClientId = clientId,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                };
+
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = clientId });
+
+                if (listToken.Count > 0)
+                {
+                    tokenInfo.TokenId = listToken.FirstOrDefault().TokenId;
+                    new TokenRepository().Update<TokenInfo>(tokenInfo);
+                }
+                else
+                {
+                    new TokenRepository().Insert<TokenInfo>(tokenInfo);
+                }
+
+                TokenInfo tokenResponse = new TokenRepository().GetById<TokenInfo>(listToken.FirstOrDefault().TokenId.ToString());
+                return tokenResponse;
             }
             catch (Exception ex)
             {
@@ -35,22 +53,35 @@ namespace OAuth2POC.IDP.Services
             }
         }
 
-        public string RefreshToken(string token, string refreshToken)
+        public TokenInfo RefreshToken(string token, string refreshToken)
         {
             try
             {
                 ClaimsPrincipal principal = GetPrincipalFromExpiredToken(token);
                 ClaimsIdentity identity = (ClaimsIdentity)principal.Identity;
                 string audience = identity.Claims.First(x => x.Type == "aud").Value;
-                UserInfo user = _userService.GetUser(audience);
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { RefreshToken = refreshToken, ClientId = audience });
 
-                if (user != null)
+                if (listToken.Count > 0)
                 {
-                    
+                    TokenInfo tokenInfo = new TokenInfo()
+                    {
+                        AccessToken = GenerateToken(listToken.FirstOrDefault().ClientId),
+                        TokenType = TokenType.Bearer,
+                        ExpiresIn = 60 * 60,
+                        RefreshToken = GenerateRefreshToken(),
+                        ClientId = listToken.FirstOrDefault().ClientId,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                    };
+
+                    tokenInfo.TokenId = listToken.FirstOrDefault().TokenId;
+                    new TokenRepository().Update<TokenInfo>(tokenInfo);
+                    TokenInfo tokenResponse = new TokenRepository().GetById<TokenInfo>(listToken.FirstOrDefault().TokenId.ToString());
+                    return tokenResponse;
                 }
                 else
                 {
-
+                    return null;
                 }
             }
             catch (Exception ex)
@@ -87,21 +118,39 @@ namespace OAuth2POC.IDP.Services
             }
         }
 
-        //public string RevokeToken()
-        //{
-        //    try
-        //    {
+        public bool RevokeToken(string token)
+        {
+            try
+            {
+                ClaimsPrincipal principal = GetPrincipal(token);
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+                if (principal == null)
+                    return false;
+
+                ClaimsIdentity identity = (ClaimsIdentity)principal.Identity;
+                string audience = identity.Claims.First(x => x.Type == "aud").Value;
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = audience });
+
+                if (listToken.Count > 0)
+                {
+                    listToken.FirstOrDefault().TokenStatus = TokenStatus.Terminate;
+                    new TokenRepository().Update<TokenInfo>(listToken.FirstOrDefault());
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         #region Get Token
 
-        private string GenerateToken(JWTInfo jwtInfo)
+        private string GenerateToken(string clientId)
         {
             try
             {
@@ -109,13 +158,13 @@ namespace OAuth2POC.IDP.Services
                 SymmetricSecurityKey securityKey = new SymmetricSecurityKey(secretBytes);
                 SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
                 {
-                    Issuer = !string.IsNullOrEmpty(jwtInfo.Payload.Issuer) ? jwtInfo.Payload.Issuer : null,
-                    Audience = !string.IsNullOrEmpty(jwtInfo.Payload.Audience.ToString()) ? jwtInfo.Payload.Audience.ToString() : null,
+                    Issuer = "OAuth2POC",
+                    Audience = clientId,
                     Subject = new ClaimsIdentity(new[]
                     {
-                        new Claim(ClaimTypes.Name, jwtInfo.Payload.Subject)
+                        new Claim(ClaimTypes.Name, "OAuth2POCToken")
                     }),
-                    Expires = DateTime.UtcNow.AddMinutes(jwtInfo.Payload.ExpirationTime),
+                    Expires = DateTime.UtcNow.AddMinutes(60),
                     NotBefore = DateTime.UtcNow,
                     SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
                 };

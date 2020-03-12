@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +51,7 @@ namespace OAuth2POC.IDP
 
             //services.AddAuthorization(options =>
             //{
-            //    options.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
+            //    options.AddPolicy("Basic", new AuthorizationPolicyBuilder()
             //        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme‌​)
             //        .RequireAuthenticatedUser().Build());
             //});
@@ -59,8 +61,6 @@ namespace OAuth2POC.IDP
             services.AddTransient<IAccountProcess, AccountProcess>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
-
-            services.AddAuthentication();
 
             services.AddMvc(options =>
             {

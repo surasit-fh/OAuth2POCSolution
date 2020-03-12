@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
+using OAuth2POC.Model.Enums;
 using OAuth2POC.Model.JsonConverters;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,11 @@ namespace OAuth2POC.Model.Models.Interface
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
         public string Password { get; set; }
+
+        [DefaultValue(null)]
+        [BsonIgnoreIfNull]
+        [BsonRepresentation(BsonType.String)]
+        public UserRole UserRole { get; set; }
 
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
