@@ -25,7 +25,7 @@ namespace OAuth2POC.Client.Adapters
             this._accept = accept;
         }
 
-        public string AuthenticationHandle(string strURL, string strRequest, string accessToken)
+        public string AuthenticationHandle(string strURL, HttpMethod httpMethod, string strRequest, string accessToken)
         {
             string response = string.Empty;
             HttpClient client = new HttpClient();
@@ -35,13 +35,19 @@ namespace OAuth2POC.Client.Adapters
 
             try
             {
-                //Uri uri = new Uri(strURL);
+                Uri uri = new Uri(strURL);
                 client.Timeout = new TimeSpan(0, 0, this._connectionTimeout);
                 client.MaxResponseContentBufferSize = this._bufferSize;
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(this._accept));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-                //httpRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                httpRequest = new HttpRequestMessage(httpMethod, uri);
+
+                if (!string.IsNullOrEmpty(strRequest))
+                {
+                    content = new StringContent(strRequest, Encoding.ASCII, this._contentType);
+                    httpRequest.Content = content;
+                }
 
                 httpResponse = client.GetAsync(strRequest).Result;
 

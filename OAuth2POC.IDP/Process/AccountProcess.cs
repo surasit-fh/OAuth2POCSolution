@@ -42,7 +42,7 @@ namespace OAuth2POC.IDP.Process
                         {
                             return AuthenticationByToken(tokenInfo);
                         }
-                    default: return MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString());
+                    default: return MappingErrorResponse(ErrorCode.NotFound, "GrantType not found");
                 }
             }
             catch (Exception ex)

@@ -40,8 +40,8 @@ namespace OAuth2POC.API.Services
         {
             try
             {
-                bool isSuccess = new UserRepository().Insert<UserInfo>(userInfo);
-                return isSuccess;
+                string isSuccess = new UserRepository().Insert<UserInfo>(userInfo);
+                return !string.IsNullOrEmpty(isSuccess) ? true : false;
             }
             catch (Exception ex)
             {

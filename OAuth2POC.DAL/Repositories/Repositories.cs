@@ -12,7 +12,7 @@ namespace OAuth2POC.DAL.Repositories
 
         public virtual List<S> GetByCriteria<T>(S modelInfo) { return null; }
 
-        public virtual bool Insert<T>(S modelInfo) { return default(bool); }
+        public virtual string Insert<T>(S modelInfo) { return string.Empty; }
 
         public virtual bool Update<T>(S modelInfo) { return default(bool); }
 

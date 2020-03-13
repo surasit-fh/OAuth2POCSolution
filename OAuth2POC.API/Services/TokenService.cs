@@ -37,10 +37,6 @@ namespace OAuth2POC.API.Services
             {
                 return false;
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
 
         public ClaimsPrincipal GetPrincipal(string token)

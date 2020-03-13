@@ -28,23 +28,25 @@ namespace OAuth2POC.IDP.Services
                     TokenType = TokenType.Bearer,
                     ExpiresIn = 60 * 60,
                     RefreshToken = GenerateRefreshToken(),
-                    ClientId = clientId,
+                    ClientId = ObjectId.Parse(clientId),
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60)
                 };
 
-                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = clientId });
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = ObjectId.Parse(clientId) });
+                string token = string.Empty;
 
                 if (listToken.Count > 0)
                 {
                     tokenInfo.TokenId = listToken.FirstOrDefault().TokenId;
                     new TokenRepository().Update<TokenInfo>(tokenInfo);
+                    token = listToken.FirstOrDefault().TokenId.ToString();
                 }
                 else
                 {
-                    new TokenRepository().Insert<TokenInfo>(tokenInfo);
+                    token = new TokenRepository().Insert<TokenInfo>(tokenInfo);
                 }
 
-                TokenInfo tokenResponse = new TokenRepository().GetById<TokenInfo>(listToken.FirstOrDefault().TokenId.ToString());
+                TokenInfo tokenResponse = new TokenRepository().GetById<TokenInfo>(token);
                 return tokenResponse;
             }
             catch (Exception ex)
@@ -60,13 +62,13 @@ namespace OAuth2POC.IDP.Services
                 ClaimsPrincipal principal = GetPrincipalFromExpiredToken(token);
                 ClaimsIdentity identity = (ClaimsIdentity)principal.Identity;
                 string audience = identity.Claims.First(x => x.Type == "aud").Value;
-                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { RefreshToken = refreshToken, ClientId = audience });
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { RefreshToken = refreshToken, ClientId = ObjectId.Parse(audience) });
 
                 if (listToken.Count > 0)
                 {
                     TokenInfo tokenInfo = new TokenInfo()
                     {
-                        AccessToken = GenerateToken(listToken.FirstOrDefault().ClientId),
+                        AccessToken = GenerateToken(listToken.FirstOrDefault().ClientId.ToString()),
                         TokenType = TokenType.Bearer,
                         ExpiresIn = 60 * 60,
                         RefreshToken = GenerateRefreshToken(),
@@ -112,10 +114,6 @@ namespace OAuth2POC.IDP.Services
             {
                 return false;
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
 
         public bool RevokeToken(string token)
@@ -129,7 +127,7 @@ namespace OAuth2POC.IDP.Services
 
                 ClaimsIdentity identity = (ClaimsIdentity)principal.Identity;
                 string audience = identity.Claims.First(x => x.Type == "aud").Value;
-                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = audience });
+                List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = ObjectId.Parse(audience) });
 
                 if (listToken.Count > 0)
                 {

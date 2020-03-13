@@ -64,7 +64,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     filter = filter & builder.Eq("RefreshToken", tokenInfo.RefreshToken);
                 }
 
-                if (!string.IsNullOrEmpty(tokenInfo.ClientId))
+                if (tokenInfo.ClientId != null)
                 {
                     filter = filter & builder.Eq("ClientId", tokenInfo.ClientId);
                 }
@@ -78,7 +78,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
             }
         }
 
-        public override bool Insert<T>(TokenInfo tokenInfo)
+        public override string Insert<T>(TokenInfo tokenInfo)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                 };
 
                 MongoDBCollectionControllers.TokensCollection.InsertOne(tokenRequest);
-                return true;
+                return tokenRequest.TokenId.ToString();
             }
             catch (Exception ex)
             {
@@ -112,7 +112,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(t => t.TokenType, tokenInfo.TokenType != TokenType.None ? tokenInfo.TokenType : TokenType.None)
                     .Set(t => t.ExpiresIn, tokenInfo.ExpiresIn > 0 ? tokenInfo.ExpiresIn : 0)
                     .Set(t => t.RefreshToken, !string.IsNullOrEmpty(tokenInfo.RefreshToken) ? tokenInfo.RefreshToken : string.Empty)
-                    .Set(t => t.ClientId, !string.IsNullOrEmpty(tokenInfo.ClientId) ? tokenInfo.ClientId : string.Empty)
+                    .Set(t => t.ClientId, tokenInfo.ClientId == null? new ObjectId(): tokenInfo.ClientId)
                     .Set(t => t.CreatedAt, DateTime.UtcNow)
                     .Set(t => t.ExpiresAt, tokenInfo.ExpiresAt != null ? tokenInfo.ExpiresAt : Convert.ToDateTime(null));
 

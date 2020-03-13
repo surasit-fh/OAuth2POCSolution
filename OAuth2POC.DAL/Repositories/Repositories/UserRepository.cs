@@ -78,7 +78,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
             }
         }
 
-        public override bool Insert<T>(UserInfo userInfo)
+        public override string Insert<T>(UserInfo userInfo)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                 };
 
                 MongoDBCollectionControllers.UsersCollection.InsertOne(userRequest);
-                return true;
+                return userRequest.UserId.ToString();
             }
             catch (Exception ex)
             {

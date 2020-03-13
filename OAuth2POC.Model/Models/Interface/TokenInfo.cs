@@ -41,9 +41,9 @@ namespace OAuth2POC.Model.Models.Interface
         [BsonIgnoreIfNull]
         //[BsonElement("_id")]
         //[BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        //[JsonConverter(typeof(ObjectIdConverter))]
-        public string ClientId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        [JsonConverter(typeof(ObjectIdConverter))]
+        public ObjectId? ClientId { get; set; }
 
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
