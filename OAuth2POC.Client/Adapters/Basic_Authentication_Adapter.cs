@@ -33,7 +33,6 @@ namespace OAuth2POC.Client.Adapters
         {
             string response = string.Empty;
             HttpClient client = new HttpClient();
-            StringContent content = null;
             HttpRequestMessage httpRequest = null;
             HttpResponseMessage httpResponse = null;
 
@@ -43,16 +42,11 @@ namespace OAuth2POC.Client.Adapters
                 byte[] clientCredentials = Encoding.ASCII.GetBytes($"{this._username}:{this._password}");
                 client.Timeout = new TimeSpan(0, 0, this._connectionTimeout);
                 client.MaxResponseContentBufferSize = this._bufferSize;
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(this._accept));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(this._accept));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(clientCredentials));
 
                 httpRequest = new HttpRequestMessage(httpMethod, uri);
-
-                if (!string.IsNullOrEmpty(strRequest))
-                {
-                    content = new StringContent(strRequest, Encoding.ASCII, this._contentType);
-                    httpRequest.Content = content;
-                }
+                httpRequest.Content = new StringContent(strRequest, Encoding.ASCII, this._contentType);
 
                 httpResponse = client.SendAsync(httpRequest).Result;
 
@@ -90,7 +84,6 @@ namespace OAuth2POC.Client.Adapters
             {
                 httpResponse.Dispose();
                 httpRequest.Dispose();
-                content.Dispose();
                 client.Dispose();
             }
 

@@ -39,8 +39,6 @@ namespace OAuth2POC.Model.Models.Interface
 
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
-        //[BsonElement("_id")]
-        //[BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId? ClientId { get; set; }
@@ -56,6 +54,7 @@ namespace OAuth2POC.Model.Models.Interface
 
         [DefaultValue(null)]
         [BsonIgnoreIfNull]
+        [BsonRepresentation(BsonType.String)]
         public TokenStatus TokenStatus { get; set; }
     }
 }

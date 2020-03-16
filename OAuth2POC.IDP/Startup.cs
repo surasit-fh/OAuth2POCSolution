@@ -57,12 +57,14 @@ namespace OAuth2POC.IDP
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
-                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme‌​)
-                    .RequireAuthenticatedUser().Build());
-            });
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
+            //        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme‌​)
+            //        .RequireAuthenticatedUser().Build());
+            //});
+
+            //services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme);
 
             services.AddMvc(options =>
             {

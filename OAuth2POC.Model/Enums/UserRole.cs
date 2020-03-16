@@ -10,6 +10,9 @@ namespace OAuth2POC.Model.Enums
     [JsonConverter(typeof(StringEnumConverter))]
     public enum UserRole : int
     {
+        [Description("Undefined")]
+        Undefined = 0,
+
         [Description("Admin")]
         Admin = 1,
 

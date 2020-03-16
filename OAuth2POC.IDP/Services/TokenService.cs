@@ -29,7 +29,8 @@ namespace OAuth2POC.IDP.Services
                     ExpiresIn = 60 * 60,
                     RefreshToken = GenerateRefreshToken(),
                     ClientId = ObjectId.Parse(clientId),
-                    ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+                    TokenStatus = TokenStatus.Active
                 };
 
                 List<TokenInfo> listToken = new TokenRepository().GetByCriteria<TokenInfo>(new TokenInfo() { ClientId = ObjectId.Parse(clientId) });
@@ -73,7 +74,8 @@ namespace OAuth2POC.IDP.Services
                         ExpiresIn = 60 * 60,
                         RefreshToken = GenerateRefreshToken(),
                         ClientId = listToken.FirstOrDefault().ClientId,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+                        TokenStatus = TokenStatus.Active
                     };
 
                     tokenInfo.TokenId = listToken.FirstOrDefault().TokenId;
@@ -152,6 +154,7 @@ namespace OAuth2POC.IDP.Services
         {
             try
             {
+                UserInfo user = new UserRepository().GetById<UserInfo>(clientId);
                 byte[] secretBytes = Convert.FromBase64String(Base64Encode(SettingHelper.ConfigMapping.Secret));
                 SymmetricSecurityKey securityKey = new SymmetricSecurityKey(secretBytes);
                 SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
@@ -160,7 +163,8 @@ namespace OAuth2POC.IDP.Services
                     Audience = clientId,
                     Subject = new ClaimsIdentity(new[]
                     {
-                        new Claim(ClaimTypes.Name, "OAuth2POCToken")
+                        new Claim(ClaimTypes.Name, "OAuth2POCToken"),//unique_name
+                        new Claim(ClaimTypes.Role, user.UserRole.ToString())
                     }),
                     Expires = DateTime.UtcNow.AddMinutes(60),
                     NotBefore = DateTime.UtcNow,

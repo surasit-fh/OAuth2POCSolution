@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using OAuth2POC.DAL.Services;
+using OAuth2POC.Model.Enums;
 using OAuth2POC.Model.Models.Interface;
 using System;
 using System.Collections.Generic;
@@ -89,6 +90,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     LastName = userInfo.LastName,
                     Username = userInfo.Username,
                     Password = userInfo.Password,
+                    UserRole = userInfo.UserRole,
                     CreateDate = DateTime.UtcNow,
                     LastUpdateDate = DateTime.UtcNow
                 };
@@ -111,6 +113,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(u => u.LastName, !string.IsNullOrEmpty(userInfo.LastName) ? userInfo.LastName : string.Empty)
                     .Set(u => u.Username, !string.IsNullOrEmpty(userInfo.Username) ? userInfo.Username : string.Empty)
                     .Set(u => u.Password, !string.IsNullOrEmpty(userInfo.Password) ? userInfo.Password : string.Empty)
+                    .Set(u => u.UserRole, userInfo.UserRole != UserRole.Undefined ? userInfo.UserRole : UserRole.Undefined)
                     .Set(u => u.LastUpdateDate, DateTime.UtcNow);
 
                 UpdateResult updateResult = MongoDBCollectionControllers.UsersCollection.UpdateOne(u => u.UserId == userInfo.UserId, objUser);
