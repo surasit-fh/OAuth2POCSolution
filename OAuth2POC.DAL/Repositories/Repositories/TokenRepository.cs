@@ -69,6 +69,11 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     filter = filter & builder.Eq("ClientId", tokenInfo.ClientId);
                 }
 
+                if (tokenInfo.TokenStatus != TokenStatus.None)
+                {
+                    filter = filter & builder.Eq("TokenStatus", tokenInfo.TokenStatus);
+                }
+
                 List<TokenInfo> listToken = MongoDBCollectionControllers.TokensCollection.Find(filter).ToList();
                 return listToken;
             }
@@ -91,7 +96,8 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     RefreshToken = tokenInfo.RefreshToken,
                     ClientId = tokenInfo.ClientId,
                     CreatedAt = DateTime.UtcNow,
-                    ExpiresAt = tokenInfo.ExpiresAt
+                    ExpiresAt = tokenInfo.ExpiresAt,
+                    TokenStatus = tokenInfo.TokenStatus
                 };
 
                 MongoDBCollectionControllers.TokensCollection.InsertOne(tokenRequest);
@@ -112,9 +118,10 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(t => t.TokenType, tokenInfo.TokenType != TokenType.None ? tokenInfo.TokenType : TokenType.None)
                     .Set(t => t.ExpiresIn, tokenInfo.ExpiresIn > 0 ? tokenInfo.ExpiresIn : 0)
                     .Set(t => t.RefreshToken, !string.IsNullOrEmpty(tokenInfo.RefreshToken) ? tokenInfo.RefreshToken : string.Empty)
-                    .Set(t => t.ClientId, tokenInfo.ClientId == null? new ObjectId(): tokenInfo.ClientId)
+                    .Set(t => t.ClientId, tokenInfo.ClientId == null ? new ObjectId() : tokenInfo.ClientId)
                     .Set(t => t.CreatedAt, DateTime.UtcNow)
-                    .Set(t => t.ExpiresAt, tokenInfo.ExpiresAt != null ? tokenInfo.ExpiresAt : Convert.ToDateTime(null));
+                    .Set(t => t.ExpiresAt, tokenInfo.ExpiresAt != null ? tokenInfo.ExpiresAt : Convert.ToDateTime(null))
+                    .Set(t => t.TokenStatus, tokenInfo.TokenStatus != TokenStatus.None ? tokenInfo.TokenStatus : TokenStatus.None);
 
                 UpdateResult updateResult = MongoDBCollectionControllers.TokensCollection.UpdateOne(t => t.TokenId == tokenInfo.TokenId, objToken);
 

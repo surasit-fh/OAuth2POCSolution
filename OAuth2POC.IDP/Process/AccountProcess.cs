@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using OAuth2POC.DAL.Repositories.Repositories;
+﻿using OAuth2POC.DAL.Repositories.Repositories;
 using OAuth2POC.IDP.Helpers;
 using OAuth2POC.IDP.Process.IProcess;
-using OAuth2POC.IDP.Services;
 using OAuth2POC.IDP.Services.IService;
 using OAuth2POC.Model.Enums;
 using OAuth2POC.Model.Models.Interface;
@@ -10,6 +8,7 @@ using OAuth2POC.Model.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -72,33 +71,6 @@ namespace OAuth2POC.IDP.Process
             }
         }
 
-        private AuthenticationResponse AuthenticationByCode(AuthenticationInfo authenticationInfo)
-        {
-            try
-            {
-                string cilentId = Encoding.ASCII.GetString(Convert.FromBase64String(authenticationInfo.Code));
-                TokenInfo tokenResponse = _tokenService.GetToken(cilentId);
-
-                if (tokenResponse != null)
-                {
-                    AuthenticationInfo authenResponse = new AuthenticationInfo()
-                    {
-                        GrantType = GrantType.AuthorizationCode
-                    };
-
-                    return MappingSuccessResponse(authenResponse, tokenResponse);
-                }
-                else
-                {
-                    return MappingErrorResponse(ErrorCode.InternalServerError, ErrorCode.InternalServerError.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
         private AuthenticationResponse AuthenticationByCredentials(string credentials)
         {
             try
@@ -113,25 +85,72 @@ namespace OAuth2POC.IDP.Process
                     authenResponse.ClientId = listUser.FirstOrDefault().UserId;
                     authenResponse.ClientSecret = Convert.ToBase64String(Encoding.ASCII.GetBytes(SettingHelper.ConfigMapping.Secret));
                     authenResponse.GrantType = GrantType.ClientCredentials;
-                    authenResponse.Code = Convert.ToBase64String(Encoding.ASCII.GetBytes(listUser.FirstOrDefault().UserId.ToString()));
+                    authenResponse.Code = GetRandomNumber(40);
                     authenResponse.State = string.Empty;
 
                     if (listUser.FirstOrDefault().UserRole.Equals(UserRole.Admin))
                     {
-                        authenResponse.Scope = new string[] { "Profile", "Address", "ServiceAPI" };
+                        authenResponse.Scope = new string[] 
+                        {
+                            Scope.Profile.ToString(),
+                            Scope.Address.ToString(),
+                            Scope.ServiceAPI.ToString()
+                        };
                     }
                     else
                     {
-                        authenResponse.Scope = new string[] { "Profile", "ServiceAPI" };
+                        authenResponse.Scope = new string[] 
+                        {
+                            Scope.Profile.ToString(),
+                            Scope.ServiceAPI.ToString()
+                        };
                     }
 
                     authenResponse.RedirectURI = string.Empty;
+
+                    listUser.FirstOrDefault().Code = authenResponse.Code;
+                    new UserRepository().Update<UserInfo>(listUser.FirstOrDefault());
 
                     return MappingSuccessResponse(authenResponse, null);
                 }
                 else
                 {
                     return MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private AuthenticationResponse AuthenticationByCode(AuthenticationInfo authenticationInfo)
+        {
+            try
+            {
+                List<UserInfo> listUser = new UserRepository().GetByCriteria<UserInfo>(new UserInfo() { Code = authenticationInfo.Code });
+
+                if (listUser.Count > 0)
+                {
+                    TokenInfo tokenResponse = _tokenService.GetToken(listUser.FirstOrDefault().UserId.ToString());
+
+                    if (tokenResponse != null)
+                    {
+                        AuthenticationInfo authenResponse = new AuthenticationInfo()
+                        {
+                            GrantType = GrantType.AuthorizationCode
+                        };
+
+                        return MappingSuccessResponse(authenResponse, tokenResponse);
+                    }
+                    else
+                    {
+                        return MappingErrorResponse(ErrorCode.InternalServerError, ErrorCode.InternalServerError.ToString());
+                    }
+                }
+                else
+                {
+                    return MappingErrorResponse(ErrorCode.Unauthorized, "Invalid authorization code");
                 }
             }
             catch (Exception ex)
@@ -165,6 +184,30 @@ namespace OAuth2POC.IDP.Process
                 throw ex;
             }
         }
+
+        #region Other Function
+
+        private string GetRandomNumber(int numberLength)
+        {
+            try
+            {
+                int length = numberLength >= 10 ? numberLength : 10;
+                byte[] randomNumber = new byte[length];
+
+                using (RandomNumberGenerator numberGenerator = RandomNumberGenerator.Create())
+                {
+                    numberGenerator.GetBytes(randomNumber);
+                }
+
+                return Convert.ToBase64String(randomNumber);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion Other Function
 
         #region Mapping Response
 

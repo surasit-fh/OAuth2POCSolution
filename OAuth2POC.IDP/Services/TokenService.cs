@@ -27,7 +27,7 @@ namespace OAuth2POC.IDP.Services
                     AccessToken = GenerateToken(clientId),
                     TokenType = TokenType.Bearer,
                     ExpiresIn = 60 * 60,
-                    RefreshToken = GenerateRefreshToken(),
+                    RefreshToken = GenerateRefreshToken(32),
                     ClientId = ObjectId.Parse(clientId),
                     ExpiresAt = DateTime.UtcNow.AddMinutes(60),
                     TokenStatus = TokenStatus.Active
@@ -72,7 +72,7 @@ namespace OAuth2POC.IDP.Services
                         AccessToken = GenerateToken(listToken.FirstOrDefault().ClientId.ToString()),
                         TokenType = TokenType.Bearer,
                         ExpiresIn = 60 * 60,
-                        RefreshToken = GenerateRefreshToken(),
+                        RefreshToken = GenerateRefreshToken(32),
                         ClientId = listToken.FirstOrDefault().ClientId,
                         ExpiresAt = DateTime.UtcNow.AddMinutes(60),
                         TokenStatus = TokenStatus.Active
@@ -152,34 +152,41 @@ namespace OAuth2POC.IDP.Services
 
         private string GenerateToken(string clientId)
         {
+            string response = string.Empty;
+
             try
             {
                 UserInfo user = new UserRepository().GetById<UserInfo>(clientId);
-                byte[] secretBytes = Convert.FromBase64String(Base64Encode(SettingHelper.ConfigMapping.Secret));
-                SymmetricSecurityKey securityKey = new SymmetricSecurityKey(secretBytes);
-                SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
-                {
-                    Issuer = "OAuth2POC",
-                    Audience = clientId,
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(ClaimTypes.Name, "OAuth2POCToken"),//unique_name
-                        new Claim(ClaimTypes.Role, user.UserRole.ToString())
-                    }),
-                    Expires = DateTime.UtcNow.AddMinutes(60),
-                    NotBefore = DateTime.UtcNow,
-                    SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
-                };
 
-                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-                JwtSecurityToken securityToken = handler.CreateJwtSecurityToken(tokenDescriptor);
-                string response = handler.WriteToken(securityToken);
-                return response;
+                if (user != null)
+                {
+                    byte[] secretBytes = Convert.FromBase64String(Base64Encode(SettingHelper.ConfigMapping.Secret));
+                    SymmetricSecurityKey securityKey = new SymmetricSecurityKey(secretBytes);
+                    SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
+                    {
+                        Issuer = "OAuth2POC",
+                        Audience = user.UserId.ToString(),
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, Base64Encode(user.UserId.ToString())),//nameid
+                            new Claim(ClaimTypes.Role, user.UserRole.ToString())
+                        }),
+                        Expires = DateTime.UtcNow.AddMinutes(60),
+                        NotBefore = DateTime.UtcNow,
+                        SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
+                    };
+
+                    JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                    JwtSecurityToken securityToken = handler.CreateJwtSecurityToken(tokenDescriptor);
+                    response = handler.WriteToken(securityToken);
+                }
             }
             catch (Exception ex)
             {
                 throw ex;
             }
+
+            return response;
         }
 
         #endregion Get Token
@@ -217,16 +224,24 @@ namespace OAuth2POC.IDP.Services
             }
         }
 
-        public string GenerateRefreshToken()
+        private string GenerateRefreshToken(int numberlength)
         {
-            byte[] randomNumber = new byte[32];
-
-            using (RandomNumberGenerator numberGenerator = RandomNumberGenerator.Create())
+            try
             {
-                numberGenerator.GetBytes(randomNumber);
-            }
+                int length = numberlength >= 10 ? numberlength : 10;
+                byte[] randomNumber = new byte[length];
 
-            return Convert.ToBase64String(randomNumber);
+                using (RandomNumberGenerator numberGenerator = RandomNumberGenerator.Create())
+                {
+                    numberGenerator.GetBytes(randomNumber);
+                }
+
+                return Convert.ToBase64String(randomNumber);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         #endregion Refresh Token

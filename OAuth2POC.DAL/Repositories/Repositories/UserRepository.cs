@@ -70,6 +70,16 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     filter = filter & builder.Eq("Password", userInfo.Password);
                 }
 
+                if (userInfo.UserRole != UserRole.Undefined)
+                {
+                    filter = filter & builder.Eq("UserRole", userInfo.UserRole);
+                }
+
+                if (!string.IsNullOrEmpty(userInfo.Code))
+                {
+                    filter = filter & builder.Eq("Code", userInfo.Code);
+                }
+
                 List<UserInfo> listUser = MongoDBCollectionControllers.UsersCollection.Find(filter).ToList();
                 return listUser;
             }
@@ -91,6 +101,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     Username = userInfo.Username,
                     Password = userInfo.Password,
                     UserRole = userInfo.UserRole,
+                    Code = userInfo.Code,
                     CreateDate = DateTime.UtcNow,
                     LastUpdateDate = DateTime.UtcNow
                 };
@@ -114,6 +125,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     .Set(u => u.Username, !string.IsNullOrEmpty(userInfo.Username) ? userInfo.Username : string.Empty)
                     .Set(u => u.Password, !string.IsNullOrEmpty(userInfo.Password) ? userInfo.Password : string.Empty)
                     .Set(u => u.UserRole, userInfo.UserRole != UserRole.Undefined ? userInfo.UserRole : UserRole.Undefined)
+                    .Set(u => u.Code, !string.IsNullOrEmpty(userInfo.Code) ? userInfo.Code : string.Empty)
                     .Set(u => u.LastUpdateDate, DateTime.UtcNow);
 
                 UpdateResult updateResult = MongoDBCollectionControllers.UsersCollection.UpdateOne(u => u.UserId == userInfo.UserId, objUser);

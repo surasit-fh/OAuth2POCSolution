@@ -36,7 +36,7 @@ namespace OAuth2POC.Client.Controllers
                     Code = getAuthCode.AuthenticationInfo.Code
                 };
 
-                AuthenticationResponse getToken = _userProcess.Authentication(null, authenRequest, null);
+                AuthenticationResponse getToken = _userProcess.Authentication(userRequest.UserInfo, authenRequest, null);
 
                 if (getToken.IsSuccess)
                 {

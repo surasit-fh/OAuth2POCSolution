@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 namespace OAuth2POC.IDP.Controllers
 {
     [SecurityHeaders]
-    //[Authorize]
     [ApiController]
     [Route("api/auth/oauth2/v2/[controller]")]
     public class AccountsController : Controller
@@ -33,11 +32,11 @@ namespace OAuth2POC.IDP.Controllers
             return authenResponse;
         }
 
-        [HttpPost("Logout")]
-        [Consumes("application/json")]
+        [HttpGet("Logout")]
+        [Consumes("application/x-www-form-urlencoded")]
         public AuthenticationResponse Logout([FromHeader]BaseHeader header)
         {
-            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(header.Authorization);
+            AuthenticationResponse authenResponse = _accountProcess.LogoutProcess(header.Authorization.Substring("Bearer".Length).Trim());
             return authenResponse;
         }
     }

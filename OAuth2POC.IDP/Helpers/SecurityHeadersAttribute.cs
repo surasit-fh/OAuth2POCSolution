@@ -44,6 +44,15 @@ namespace OAuth2POC.IDP.Helpers
                     filterContext.Result = new JsonResult(MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString()));
                 }
             }
+            else if (authorizationHeader.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
+            {
+                string token = authorizationHeader.Substring("Bearer".Length).Trim();
+
+                if (!new TokenService().ValidateToken(token))
+                {
+                    filterContext.Result = new JsonResult(MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString()));
+                }
+            }
             else
             {
                 filterContext.Result = new JsonResult(MappingErrorResponse(ErrorCode.Unauthorized, ErrorCode.Unauthorized.ToString()));
