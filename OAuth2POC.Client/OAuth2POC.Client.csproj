@@ -13,6 +13,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\OAuth2POC.DAL\OAuth2POC.DAL.csproj" />
     <ProjectReference Include="..\OAuth2POC.Model\OAuth2POC.Model.csproj" />
   </ItemGroup>
 

@@ -250,8 +250,6 @@ namespace OAuth2POC.IDP.Services
 
         private ClaimsPrincipal GetPrincipal(string token)
         {
-            ClaimsPrincipal principal = null;
-
             try
             {
                 JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
@@ -270,7 +268,7 @@ namespace OAuth2POC.IDP.Services
                     IssuerSigningKey = new SymmetricSecurityKey(secretKey)
                 };
 
-                principal = tokenHandler.ValidateToken(token, parameters, out SecurityToken securityToken);
+                ClaimsPrincipal principal = tokenHandler.ValidateToken(token, parameters, out SecurityToken securityToken);
                 return principal;
             }
             catch (Exception ex)

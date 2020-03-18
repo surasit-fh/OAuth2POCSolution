@@ -41,7 +41,7 @@ namespace OAuth2POC.Client.Adapters
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
                 httpRequest = new HttpRequestMessage(httpMethod, uri);
-                httpRequest.Content = new StringContent(strRequest, Encoding.ASCII, this._contentType);
+                httpRequest.Content = new StringContent(strRequest, Encoding.UTF8, this._contentType);
 
                 httpResponse = client.SendAsync(httpRequest).Result;
 

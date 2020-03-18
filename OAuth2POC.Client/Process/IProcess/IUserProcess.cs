@@ -9,8 +9,10 @@ namespace OAuth2POC.Client.Process.IProcess
 {
     public interface IUserProcess
     {
-        AuthenticationResponse Authentication(UserInfo userInfo, AuthenticationInfo authenticationInfo, TokenInfo tokenInfo);
-        UserControlResponse GetUsers(string token);
-        UserControlResponse GetUser(string token, UserInfo userInfo);
+        UserControlResponse GetUsers(string credentials);
+        UserControlResponse GetUser(string credentials, UserInfo userInfo);
+        UserControlResponse InsertUser(string credentials, UserInfo userInfo);
+        UserControlResponse UpdateUser(string credentials, UserInfo userInfo);
+        UserControlResponse DeleteUser(string credentials, UserInfo userInfo);
     }
 }
