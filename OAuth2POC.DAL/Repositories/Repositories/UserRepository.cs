@@ -100,7 +100,7 @@ namespace OAuth2POC.DAL.Repositories.Repositories
                     LastName = userInfo.LastName,
                     Username = userInfo.Username,
                     Password = userInfo.Password,
-                    UserRole = userInfo.UserRole,
+                    UserRole = userInfo.UserRole != UserRole.Undefined ? userInfo.UserRole : UserRole.User,
                     Code = userInfo.Code,
                     CreateDate = DateTime.UtcNow,
                     LastUpdateDate = DateTime.UtcNow
