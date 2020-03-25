@@ -16,19 +16,11 @@ namespace OAuth2POC.XUnitTest.OAuth2POC.IDP.UnitTests.Services
         {
             UserInfo expected = new UserInfo()
             {
-                UserId = ObjectId.Parse("5e5dd2e536eeff9b0efac5af"),
-                FirstName = "test1",
-                LastName = "test1",
-                Username = "user1",
-                Password = "pass1",
-                Code = "Xwgp/I8CeOdCUXUsUQ2MWE7QV1JXqHxEK+4H5EeeT/nO0IG4scF0AQ==",
-                CreateDate = Convert.ToDateTime("2020-03-03T03:45:41.056Z"),
-                LastUpdateDate = Convert.ToDateTime("2020-03-18T07:15:05.715Z"),
-                UserRole = UserRole.User
+                UserId = ObjectId.Parse("5e5dd2f736eeff9b0efac5b1")
             };
 
             List<UserInfo> actual = new UserService().GetUsers();
-            Assert.Contains(expected, actual);
+            Assert.True(actual.Exists(x => x.UserId == expected.UserId));
         }
 
         [Fact]
