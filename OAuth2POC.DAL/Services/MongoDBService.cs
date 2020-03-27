@@ -7,7 +7,7 @@ namespace OAuth2POC.DAL.Services
 {
     internal class MongoDBService
     {
-        private static string connectionString = "mongodb://admin:OAuth2POC@192.168.2.106:27017/OAuth2POC";
+        private static string connectionString = "mongodb://admin:OAuth2POC@localhost:27017/OAuth2POC";
 
         internal static IMongoDatabase ConnectMongoDB
         {
