@@ -14,7 +14,7 @@ namespace OAuth2POC.IDP.Controllers
 {
     [SecurityHeaders]
     [ApiController]
-    [Route("api/auth/oauth2/v2/[controller]")]
+    [Route("api/v1/oauth2/[controller]")]
     public class AccountsController : Controller
     {
         private readonly IAccountProcess _accountProcess;

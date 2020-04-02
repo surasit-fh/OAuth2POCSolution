@@ -15,7 +15,7 @@ namespace OAuth2POC.API.Controllers
     [SecurityHeaders]
     [Authorize(Policy = "Bearer")]
     [ApiController]
-    [Route("api/auth/oauth2/v2/[controller]")]
+    [Route("api/v1/oauth2/[controller]")]
     public class ServicesController : Controller
     {
         private readonly IServiceProcess _serviceProcess;

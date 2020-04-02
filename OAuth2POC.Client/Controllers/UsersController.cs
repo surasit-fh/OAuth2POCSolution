@@ -15,7 +15,7 @@ namespace OAuth2POC.Client.Controllers
 {
     [SecurityHeaders]
     [ApiController]
-    [Route("api/auth/oauth2/v2/[controller]")]
+    [Route("api/v1/oauth2/[controller]")]
     public class UsersController : Controller
     {
         private readonly IUserProcess _userProcess;
