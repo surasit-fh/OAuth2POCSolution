@@ -1,40 +1,28 @@
-version: "1.0"
+version: "3.1"
 services:
   reverse-proxy:
     container_name: reverse-proxy
+    image: nginx:latest
     restart: always
-    image: nginx
     ports:
       - "9090:8080"
     volumes:
       - ./proxy.conf:/etc/nginx/conf.d/default.conf
   mongodb:
     container_name: mongodb
-    image: mongodb
+    image: mongodb:latest
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: Oauth2POC
+      MONGO_INITDB_ROOT_PASSWORD: OAuth2POC
+      MONGO_INITDB_DATABASE: OAuth2POC
     volumes:
       - ${WEBAPP_STORAGE_HOME}/site:/data/db
     ports:
       - "27017:27017"
   oauth2poc-api:
-    container_name: oauth2poc-api:v-1.0
-    restart: always
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    ports:
-      - "31000:80"
-      - "41000:443"
-    volumes:
-      - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
-      - ${HOME}/.aspnet/https:/root/.aspnet/https/
-    links:
-      - mongodb
-  oauth2poc-idp:
-    container_name: oauth2poc-idp:v-1.0
+    container_name: oauth2poc.api:v-1.0
+    image: oauth2poc.api:v-1.0
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -42,6 +30,21 @@ services:
     ports:
       - "32000:80"
       - "42000:443"
+    volumes:
+      - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
+      - ${HOME}/.aspnet/https:/root/.aspnet/https/
+    links:
+      - mongodb
+  oauth2poc-idp:
+    container_name: oauth2poc.idp:v-1.0
+    image: oauth2poc.idp:v-1.0
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "31000:80"
+      - "41000:443"
     volumes:
       - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
       - ${HOME}/.aspnet/https:/root/.aspnet/https/
