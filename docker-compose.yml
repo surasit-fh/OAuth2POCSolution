@@ -10,7 +10,7 @@ services:
       - ./proxy.conf:/etc/nginx/conf.d/default.conf
   mongodb:
     container_name: mongodb
-    image: mongodb:latest
+    image: mongo:latest
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
